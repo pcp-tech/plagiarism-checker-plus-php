@@ -1,30 +1,43 @@
 {
-  "name": "plagiarismcheckerplus/sdk",
-  "description": "Official PHP client for the Plagiarism Checker Plus API: plagiarism checks with sources and AI writing detection.",
-  "type": "library",
-  "keywords": ["plagiarism checker", "ai detector", "ai content detection", "plagiarism", "api"],
-  "homepage": "https://plagiarismcheckerplus.com",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Plagiarism Checker Plus",
-      "email": "contact@plagiarismcheckerplus.com",
-      "homepage": "https://plagiarismcheckerplus.com"
+    "name": "plagiarismcheckerplus/sdk",
+    "description": "Official PHP client for the Plagiarism Checker Plus API: plagiarism checker API with linked sources and AI detector API with a per-sentence AI likelihood.",
+    "type": "library",
+    "keywords": [
+        "plagiarism checker api",
+        "ai detector api",
+        "ai detection",
+        "plagiarism checker",
+        "plagiarism detection",
+        "ai content detector",
+        "plagiarism",
+        "sdk",
+        "api client"
+    ],
+    "homepage": "https://plagiarismcheckerplus.com/integrations/api",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Plagiarism Checker Plus",
+            "email": "contact@plagiarismcheckerplus.com",
+            "homepage": "https://plagiarismcheckerplus.com"
+        }
+    ],
+    "support": {
+        "email": "contact@plagiarismcheckerplus.com",
+        "issues": "https://github.com/pcp-tech/plagiarism-checker-plus-php/issues",
+        "docs": "https://app.plagiarismcheckerplus.com/api-docs",
+        "source": "https://github.com/pcp-tech/plagiarism-checker-plus-php"
+    },
+    "require": {
+        "php": ">=8.1",
+        "ext-json": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "PlagiarismCheckerPlus\\": "src/"
+        }
+    },
+    "scripts": {
+        "test": "php tests/run.php"
     }
-  ],
-  "support": {
-    "email": "contact@plagiarismcheckerplus.com",
-    "docs": "https://plagiarismcheckerplus.com/integrations/api",
-    "source": "https://github.com/pcp-tech/plagiarism-checker-plus-php"
-  },
-  "require": {
-    "php": ">=8.1",
-    "ext-json": "*"
-  },
-  "autoload": {
-    "psr-4": { "PlagiarismCheckerPlus\\": "src/" }
-  },
-  "scripts": {
-    "test": "php tests/run.php"
-  }
 }
