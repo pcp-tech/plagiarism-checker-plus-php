@@ -10,7 +10,7 @@ namespace PlagiarismCheckerPlus;
 final class Client
 {
     public const DEFAULT_BASE_URL = 'https://app.plagiarismcheckerplus.com/api/public/v1';
-    public const VERSION = '1.0.0';
+    public const VERSION = '1.1.0';
 
     private string $apiKey;
     private string $baseUrl;
@@ -53,7 +53,11 @@ final class Client
         return $this->request('GET', '/scans', array_filter(['page' => $page, 'limit' => $limit], static fn ($v) => $v !== null));
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * Plan, word balances, free API trial ('trial'), 'balances', 'autoTopup' and this key's 'key' mode and cap.
+     *
+     * @return array<string, mixed>
+     */
     public function getAccount(): array
     {
         return $this->request('GET', '/account');

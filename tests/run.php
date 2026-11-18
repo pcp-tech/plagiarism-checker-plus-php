@@ -16,6 +16,7 @@ use PlagiarismCheckerPlus\Client;
 use PlagiarismCheckerPlus\Response;
 use PlagiarismCheckerPlus\ScanTimeoutException;
 use PlagiarismCheckerPlus\Transport;
+use PlagiarismCheckerPlus\Webhook;
 
 final class FakeTransport implements Transport
 {
@@ -68,16 +69,40 @@ $client->listScans(2, 5);
 check(str_ends_with($t->calls[0][1], '/scans/s1?include_text=true'), 'getScan query');
 check(str_ends_with($t->calls[1][1], '/scans?page=2&limit=5'), 'listScans query');
 
-// Error code.
-$t = new FakeTransport([json(403, ['error' => ['code' => 'plan_required', 'message' => 'Paid plan needed']])]);
+// Error code and details.
+$billing = 'https://app.plagiarismcheckerplus.com/developers/billing';
+$t = new FakeTransport([json(402, ['error' => [
+    'code' => 'trial_exhausted', 'message' => 'Trial used up', 'wordsNeeded' => 900, 'billingUrl' => $billing,
+]])]);
 $client = new Client('k', Client::DEFAULT_BASE_URL, $t);
 try {
-    $client->getAccount();
+    $client->createScan('text', ['plagiarism']);
     check(false, 'error thrown');
 } catch (ApiException $e) {
-    check($e->getStatus() === 403, 'error status');
-    check($e->getErrorCode() === ApiException::PLAN_REQUIRED, 'error code');
+    check($e->getStatus() === 402, 'error status');
+    check($e->getErrorCode() === ApiException::TRIAL_EXHAUSTED, 'error code');
+    check(($e->getDetails()['billingUrl'] ?? null) === $billing, 'error details');
 }
+check(ApiException::KEY_CAP_REACHED === 'key_cap_reached', 'key_cap_reached constant');
+check(ApiException::PLAN_REQUIRED === 'plan_required', 'deprecated constant kept');
+
+// Webhook signatures.
+$secret = 'whsec_test_secret';
+$body = '{"id":"evt_1","type":"scan.completed","createdAt":"2026-11-18T00:00:00Z","data":{}}';
+$ts = 1800000000;
+$sign = static fn (int $t, string $b, string $k = 'whsec_test_secret'): string => hash_hmac('sha256', $t . '.' . $b, $k);
+$header = "t=$ts,v1=" . $sign($ts, $body);
+check(Webhook::SIGNATURE_HEADER === 'PCP-Signature', 'webhook header name');
+check(Webhook::verifySignature($secret, $header, $body, 300, $ts + 10), 'webhook valid');
+check(Webhook::verifySignature($secret, "t=$ts,v1=" . $sign($ts, $body, 'other') . ',v1=' . $sign($ts, $body), $body, 300, $ts), 'webhook rotation');
+check(!Webhook::verifySignature('whsec_wrong', $header, $body, 300, $ts), 'webhook wrong secret');
+check(!Webhook::verifySignature($secret, $header, $body . ' ', 300, $ts), 'webhook changed body');
+check(!Webhook::verifySignature($secret, $header, $body, 300, $ts + 301), 'webhook too old');
+check(!Webhook::verifySignature($secret, $header, $body, 300, $ts - 301), 'webhook too new');
+check(Webhook::verifySignature($secret, $header, $body, 600, $ts + 500), 'webhook custom tolerance');
+check(!Webhook::verifySignature($secret, 'v1=' . $sign($ts, $body), $body, 300, $ts), 'webhook missing t');
+check(!Webhook::verifySignature($secret, "t=$ts", $body, 300, $ts), 'webhook missing v1');
+check(!Webhook::verifySignature($secret, null, $body, 300, $ts), 'webhook no header');
 
 // waitForScan honours Retry-After.
 $t = new FakeTransport([

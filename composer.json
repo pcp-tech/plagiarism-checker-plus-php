@@ -11,7 +11,8 @@
         "ai content detector",
         "plagiarism",
         "sdk",
-        "api client"
+        "api client",
+        "webhooks"
     ],
     "homepage": "https://plagiarismcheckerplus.com/integrations/api",
     "license": "MIT",
